@@ -1,0 +1,101 @@
+#include "mbed.h"
+#include <ros.h>
+#include <geometry_msgs/Twist.h>
+
+ros::NodeHandle  nh;
+
+DigitalOut step(D2);
+DigitalOut dir(D5);
+DigitalOut en(D8);
+DigitalOut step1(D3);
+DigitalOut dir1(D6);
+DigitalOut step2(D4);
+DigitalOut dir2(D7);
+
+float stepDelay = 0.0016;
+
+void messageCb( const geometry_msgs::Twist& msg)
+{
+    int base = msg.angular.x;
+    int link1 = msg.angular.y;
+    int link2 = msg.angular.z;
+    //myled = vrec;
+    if(base > 200&& base <410) {        //Valores en grados, maximo 210°
+        int vr = base-200;
+        for (int x = 0; x < vr; x++) {
+            step=1;
+            dir=0;
+            en=0;
+            wait(stepDelay);
+            step=0;
+
+        }
+    }
+    wait(1);
+    if(base <= 200) {
+        for (int x = 0; x < base; x++) {
+            step=1;
+            dir=1;
+            en=0;
+            wait(stepDelay);
+            step=0;
+        }
+    }
+    wait(1);
+    if(link1 > 200 && link1 <410) {        //Valores en grados, maximo 210°
+        int vr = link1-200;
+        for (int x = 0; x < vr; x++) {
+            step1=1;
+            dir1=0;
+            en=0;
+            wait(stepDelay);
+            step1=0;
+
+        }
+    }
+   wait(1);
+    if(link1 <= 200) {
+        for (int x = 0; x < link1; x++) {
+            step1=1;
+            dir1=1;
+            en=0;
+            wait(stepDelay);
+            step1=0;
+        }
+    }
+    wait(1);
+    if(link2 > 200 && link2 <410) {        //Valores en grados, maximo 210°
+        int vr = link2-100;
+        for (int x = 0; x < vr; x++) {
+            step2=1;
+            dir2=0;
+            en=0;
+            wait(stepDelay);
+            step2=0;
+
+        }
+    }
+    wait(1);
+    if(link2 <= 200) {
+        for (int x = 0; x < link2; x++) {
+            step2=1;
+            dir2=1;
+            en=0;
+            wait(stepDelay);
+            step2=0;
+        }
+    }
+}
+
+ros::Subscriber<geometry_msgs::Twist> sub("cmd_ang", messageCb);
+
+int main()
+{
+    nh.initNode();
+    nh.subscribe(sub);
+
+    while (1) {
+        nh.spinOnce();
+        wait_ms(1);
+    }
+}
